@@ -1,2 +1,823 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+import java.util.Scanner;
+import java.util.Arrays;
+import java.lang.Math;
+class Game{
+    private static Scanner input = new Scanner(System.in);
+    private static int playerChoice, beanNum, day, startDay, playerTotal, dealerTotal, dealerCardHidden, betAmount, bulletAmt, farmVisit, saloonVisit, bankVisit, graveyardVisit, deaths;
+    private static double strength, money, depositAmt, speed;
+    private static boolean hasDeposited, hasAce, dealerHasAce, takenBarBean, hasBlackjackBean, hasGraveyardBean, robbedSaloon, hasGun, boughtBeans, hasSunglasses, beatenNewt, hasCoat, neoSight;
+    private static int[] cards = new int[52];
+    private static Characters[] charactersAr = new Characters[4];
+    private static Characters skeleton1 = new Characters("Johnathan Carlton Lynch", 5 , 1, 1);
+    private static Characters skeleton2  = new Characters("Merrimack", 5 , 1, 1);
+    private static Characters smith = new Characters("Smith", 20, 1.2, 2);
+    private static Characters playerCharacter;
+    public static void main(String args[]){
+        System.out.println("You, a totally not anthropomorphic lizard, wander into a quiet desert town called Sand");
+        farmVisit = 0;
+        saloonVisit = 0;
+        bankVisit = 0;
+        graveyardVisit = 0;
+        deaths = 0;
+        //^For end of the game credits^
+        startGame();
+    }
+    public static void startGame(){
+        beanNum = 0;
+        day = 0;
+        strength = 1;
+        speed = 1;
+        money = 20.00;
+        hasDeposited = false;
+        playerTotal = 0;
+        dealerTotal = 0;
+        hasAce = false;
+        takenBarBean = false;
+        hasBlackjackBean = false;
+        hasGraveyardBean = false;
+        robbedSaloon = false;
+        hasGun = false;
+        boughtBeans = false;
+        hasSunglasses = false;
+        beatenNewt = false;
+        hasCoat = false;
+        neoSight = false;
+        makeCards();
+        makeCharacters(); //Cant get arrays to work, just gonna do something different
+        presentCity();
+    }
+    public static void presentCity(){
+        day++;
+        speed *= 1.05; 
+        //Shorter Method, leads to more interactions
+        System.out.println("Where do you want to go? \n1) The Farm \n2) The Saloon \n3) The Bank \n4) The Graveyard");
+        playerChoice = getPlayerChoice(1,4);
+        if(playerChoice == 1){
+            farmVisit++;
+            farm();
+        } else if (playerChoice == 2){
+            saloonVisit++;
+            saloon();
+        } else if (playerChoice == 3) {
+            bankVisit++;
+            bank();
+        } else if (playerChoice == 4) {
+            graveyardVisit++;
+            graveyard();
+        }
+    }
+    public static int getPlayerChoice(int lower, int higher){
+        int userChoice = input.nextInt();
+        if(userChoice < lower || userChoice > higher){
+            System.out.println("Invalid choice, please guess between " + lower + " and " + higher);
+            return getPlayerChoice(lower, higher);
+        }
+        else {
+            playerChoice = userChoice;
+            return playerChoice;
+        }
+    }
+//Farm
+    public static void farm(){
+        System.out.println(beanNum);
+        if (beanNum == 5){
+            beanQuestDone();
+        }
+        System.out.println("As you walk up to the farm, you see who you presume to be the owner. She asks if you are here to work \n1) Yes \n2) No");
+        playerChoice = getPlayerChoice(1,2);
+        if (playerChoice == 1){
+            System.out.println(" Thanks for the help! Here is $5, its the best I have. \nSorry to bother you any more, but Im the only bean farmer in this area, and my stock has been stolen. Could you do me a favor and collect any beans you see!");
+            strength *= 1.2;
+            money += 5;
+        } else {
+            System.out.println(" Thats ok, I get it. However, if you happen to find any beans around town, Im the only bean farmer in this area, and my stock has been stolen. Could you do me a favor and collect any you see!");
+        }
+        System.out.println("You leave the farm and head back to Sand");
+        presentCity();
+    }
+//Saloon
+    public static void saloon(){
+        System.out.println("In the saloon you see a cowboy, a blackjack table, and some open seats. Where do you go? \n1) Cowboy\n2) Blackjack Table\n3) Open seats \n4) Outside");
+        getPlayerChoice(1,4);
+        if(playerChoice == 1 && beatenNewt == false){
+            System.out.println("As you walk up to the cowboy, he looks up at you and makes eye contact with you. This totally not an anthropomorphic newt challenges you to a duel \nDo you accept? \n1) Yes \n2) No");
+            getPlayerChoice(1, 2);
+            if(playerChoice == 1){
+                cowboyDuel();
+            }
+            if(playerChoice == 2){
+                System.out.println("The people of the saloon look at you like you are a madman, and they push you out of the building and into the hands of some random highway men, who bring you somewhere else blindfolded");
+                deathFarm();
+            }
+        }
+        if(playerChoice == 1 && beatenNewt){
+            System.out.println("The newt-cowboy sees you walking towards him and he slithers away");
+            saloon();
+        }
+        if(playerChoice == 2){
+            System.out.println("As you walk up to the table, the denizens force you into a seat and force you to play against the dealer \n How much are you going to bet (Must bet in whole numbers? You have $" + money);
+            betAmount = getPlayerChoice(0, (int)money);
+            money -= betAmount;
+            makeCards();
+            dealCards();
+        }
+        if(playerChoice == 3){
+            System.out.print("As you walk up to the open seats, a totally not anthropomorphic owl behind the counter offers you a drink that costs $5. You have $" + money);
+            if (money >= 5){
+                System.out.println(" Purchase the drink? \n1) Yes\n2) No");
+                getPlayerChoice(1, 2);
+                if(playerChoice == 1){
+                    System.out.print("You take the drink and down it in 1 gulp.");
+                    money -=5;
+                    if(takenBarBean == false){
+                        System.out.println("You find a bean in the bottom of your drink, do you take it? \n1) Yes \n2) No");
+                        getPlayerChoice(1, 2);
+                        if(playerChoice == 1){
+                            System.out.println("You take the bean and put it in your pocket.");
+                            beanNum++;
+                            takenBarBean = true;
+                        }
+                    }
+                }
+                saloon();
+            }
+        }
+        if(playerChoice == 4){
+            presentCity();
+        }
+        presentCity();
+    }
+    public static void dealCards(){ //Plays like blackjack, get to 21 with aces that can be 1 || 11, dealer stops at 17
+        dealerTotal = 0;
+        playerTotal = 0;
+        int playerCard1 = getCard();
+        int dealerCard1 = getCard();
+        int playerCard2 = getCard();
+        dealerCardHidden = getCard();
+        playerTotal = playerCard1 + playerCard2;
+        if(playerCard1 == 1 || playerCard2 == 1){
+            hasAce = true;
+        }
+        if(hasAce){
+            playerTotal += 10;
+        }
+        if(dealerCard1 == 1 || dealerCardHidden == 1){
+            dealerTotal += 10;
+            dealerHasAce = true;
+        }
+        if(playerTotal == 21){
+            System.out.println("You won with an immediate 21!");
+            blackjackWin();
+        }
+        dealerTotal += dealerCard1 + dealerCardHidden;
+        System.out.println("You have " + playerCard1 + " and " + playerCard2 + " You have " + playerTotal + ". The dealer has " + dealerCard1 + " and an unknown card");
+        playerTurn();
+        
+    }
+    public static int getCard(){
+        
+        int cardNum = (int) (Math.random()*52);
+        while(cards[cardNum] == 0){
+            cardNum = (int) (Math.random()*52);
+        }
+        int card = cards[cardNum];
+        cards[cardNum] = 0;
+        return card;
+    }
+    public static void playerTurn(){
+        System.out.println("Would you like to get another card? \n1) Yes \n2) No");
+        getPlayerChoice(1,2);
+        if(playerChoice == 1){
+            while(playerChoice == 1){
+                int playerCard = getCard();
+                playerTotal += playerCard;
+                System.out.println("You drew a " + playerCard + " making your total " + playerTotal);
+                if(playerTotal > 21 && hasAce == false){
+                    System.out.println("You lose");
+                    blackjackLose();
+                }
+                if(playerTotal > 21 && hasAce ){
+                    playerTotal -= 10;
+                    System.out.println("You went over 21, but you had an ace so you are now at " + playerTotal);
+                    hasAce = false;
+                }
+                System.out.println("Would you like to get another card? \n1) Yes \n2) No");
+                getPlayerChoice(1,2);
+            }
+        }
+        System.out.println("The dealer has " + dealerCardHidden + " making their total " + dealerTotal);
+        dealerTurn();
+    }
+    public static void dealerTurn(){
+        while(dealerTotal < 17){
+            int dealerCard = getCard();
+            if(dealerCard == 1){
+                dealerHasAce = true;
+            }
+            dealerTotal += dealerCard;
+            if (dealerTotal > 21 && dealerHasAce){
+                dealerTotal -= 10;
+                dealerHasAce = false;
+            }
+            System.out.println("The dealer drew " + dealerCard + ". Making their total " + dealerTotal);
+        }
+        if (dealerTotal > 21){
+                System.out.println("Dealer busted, you win");
+                blackjackWin();
+            }
+        if (dealerTotal == playerTotal){
+                System.out.println("You get your money back, you tied");
+                blackjackTie();
+            }
+        if(dealerTotal < playerTotal){
+                System.out.println("you win");
+                blackjackWin();
+            }
+        if(dealerTotal > playerTotal && dealerTotal < 22){
+            System.out.println("you lose");
+            blackjackLose();
+        }
+    }
+    public static void blackjackWin(){
+        money += betAmount*2;
+        if(hasBlackjackBean == false){
+            System.out.println("You are also given a bean with the rest of your money");
+            beanNum++;
+            hasBlackjackBean = true;
+        }
+        saloon();
+    }
+    public static void blackjackTie(){
+        money += betAmount;
+        saloon();
+    }
+    public static void blackjackLose(){
+        System.out.println("The \"people\" look around the table and laugh as they know hat is about to happen");
+        deathFarm();
+    }
+    public static void cowboyDuel(){
+        double cowboyNum = Math.random();
+        if(cowboyNum > .5){
+            cowboyNum = 2;
+        } else{
+            cowboyNum = 1;
+        }
+        System.out.println("Guess a number between 1 and 2, if it is the same as the cowboys number you lose");
+        getPlayerChoice(1, 2);
+        if (playerChoice == cowboyNum){
+            System.out.println("As you look up, the newt has already beaten you. He walks up to you and says \"Better luck next time \" and takes your money");
+            gameOver();
+        } else {
+            System.out.println("You win and walk up to the newt. He pleads for mercy and gives you his money and a bean he said he stole. \n+1 bean, +$10");
+            money += 10;
+            beanNum++;
+            beatenNewt = true;
+            saloon();
+        }
+        
+    }
+//Bank
+    public static void bank(){
+        System.out.println("As you walk into the Bank, you see a totally not anthropomorphic ground squirrel who introduces himself as the Banker of the town of Sand. \nHe asks if you have any business to the bank \n1) Yes \n2) No");
+        getPlayerChoice(1,2);
+        if (playerChoice == 2){
+            System.out.println("The Banker looks behind you and points at you, you feel yourself getting lifted off the ground, as if magic. The Banker says \"Wrong choice.\"");
+            deathFarm();
+        } else {
+            System.out.println("You have $" + money + ". Would you like to deposit some money? \n1) Yes \n2) No");
+            if(hasDeposited){
+                System.out.println("3) Withdraw money");
+                getPlayerChoice(1, 3);
+            } else{
+                getPlayerChoice(1,2);
+            }
+            if(playerChoice == 3){
+                calculateIntrest();
+                getWithdrawl(0, depositAmt);
+            }
+            if (playerChoice == 1){
+                calculateIntrest();
+                if (hasDeposited){
+                    System.out.println("You have $" + money + " in the bank.");
+                }
+                getDeposit(0, money);
+                money -= depositAmt;
+                if (!hasDeposited){
+                    System.out.println("As a first time customer, you get this complementary bean I found the other day!");
+                    beanNum++;
+                }
+                startDay = day;
+                hasDeposited = true;
+            }  
+            if(playerChoice == 2){
+                System.out.println("Then get out of here!");
+            }
+        }
+        presentCity();
+    }
+    public static double getDeposit(double lower, double higher){
+        //modified getPlayerChoice for deposit
+        System.out.println("You may invest between " + lower + " and " + higher);
+        double userChoice = input.nextDouble();
+        if(userChoice < lower || userChoice > higher){
+            System.out.println("Invalid choice, please select between " + lower + " and " + higher);
+            return getDeposit(lower, higher);
+        }
+        else {
+            depositAmt += userChoice;
+            return depositAmt;
+        }
+    }
+    public static double getWithdrawl(double lower, double higher){
+        //modified getPlayerChoice for withdrawl
+        System.out.println("You may withdraw between " + lower + " and " + higher);
+        double userChoice = input.nextDouble();
+        if(userChoice < lower || userChoice > higher){
+            System.out.println("Invalid choice, please select between " + lower + " and " + higher);
+            return getWithdrawl(lower, higher);
+        }
+        else {
+            depositAmt -= userChoice;
+            money += userChoice;
+            return depositAmt;
+        }
+    }
+    public static void calculateIntrest(){
+        //imperfect intrest calculation, 5% interest per day
+        depositAmt *= Math.pow(1.05,day-startDay);
+    }
+//Graveyard
+    public static void graveyard(){
+        System.out.println("You look around the graveyard and a couple gravestones stand out to you. Which one do you go to? \n1) The old Mayors\n2) The old Sheriffs \n3) The old Bankers\n4) Back to Sand");
+        getPlayerChoice(1, 4);
+        if(playerChoice == 1){
+            mayorGrave();
+        }
+        if(playerChoice == 2){
+            sheriffGrave();
+        }
+        if(playerChoice == 3){
+            bankerGrave();
+        }
+        if(playerChoice == 4){
+            presentCity();
+        }
+    }
+    public static void mayorGrave(){
+        System.out.println("The grave has a picture of a turtle in a white tophat with the years 1965 - 2011 on it. Other than that there isnt much.");
+        graveyard();
+    }
+    public static void sheriffGrave(){
+        System.out.println("The grave has a picture of a totally not anthropomorphic lizard, not too unlike yourself, with a hat on. There are the years 1973 - 2015 on the grave.");
+        if(!hasGraveyardBean){
+            if(day < 3){
+                System.out.println("Next to the grave there is a bean, do you take it \n1) Yes \n2) No");
+            } else {
+                System.out.println("Next to the grave there is a beansprout, do you pull it? \n1) Yes \n2) No");
+            }
+            getPlayerChoice(1, 2);
+            if(playerChoice == 1){
+                System.out.println("You have gotten a bean!");
+                beanNum++;
+            }
+            graveyard();
+        }
+    }
+    public static void bankerGrave(){
+        System.out.println("The grave has a picture of an owl and the years 1980 - 2011. It says \"Somehow he drowned in the desert. How ironic.\"");
+        System.out.println("The gravestone also tells a story of a lizard with some sick shades and a trenchcoat that will save the city, whatever that means");
+        graveyard();
+    }
+//Post Bean Quest
+    public static void beanQuestDone(){
+        System.out.println("As you walk into the farm, the Farmer senses that you have the beans! \"The beans! \" She exclaims! \"You have the beans\" Do you give her the beans. \n1) Yes\n2) No");
+        getPlayerChoice(1,2);
+        if(playerChoice == 2){
+            System.out.print("The Farmer says \"Why arnt you giving the beans? I know you have beans!\" \nShe calls over a vulture who grabs you and flies you up into the sky up");
+            for(int e = 0; e<1000; e++);
+            System.out.print(" and up ");
+            for(int e = 0; e<1000; e++);
+            System.out.println(" and up. Then you are dropped down and down until you hit the ground with a thud ");
+            gameOver();
+        } else{
+            System.out.println("Thanks! Cya later Pal!");
+            presentCityPostBean();
+        }
+    }
+    public static void presentCityPostBean(){
+        day++; 
+        //like present city but with different interactions
+        System.out.println("Where do you want to go? \n1) The Farm \n2) The Saloon \n3) The Bank \n4) The Graveyard");
+        playerChoice = getPlayerChoice(1,4);
+        if(playerChoice == 1){
+            farmVisit++;
+            farmPostBean();
+        } else if (playerChoice == 2){
+            saloonVisit++;
+            saloonPostBean();
+        } else if (playerChoice == 3) {
+            bankVisit++;
+            bankPostBean();
+        } else if (playerChoice == 4) {
+            graveyardVisit++;
+            graveyardPostBean();
+        }
+    }
+    public static void farmPostBean(){
+        System.out.println("As you walk to the farm you find yourself walking in circles, unable to leave Sand. Eventually you give up after being at the city square once again");
+        presentCityPostBean();
+    }
+    public static void saloonPostBean(){
+        System.out.println("As you walk into the saloon, you find it empty.");
+        if(robbedSaloon == false){
+            System.out.println("Do you steal from the saloon? \n1) Yes \n2) No");
+            getPlayerChoice(1,2);
+            if(playerChoice == 1){
+                System.out.print("You steal the $20 from the saloon. ");
+                money += 20;
+                speed *= 1.15;
+            }
+        }
+        System.out.println("With nothing to do, you leave the saloon");
+        presentCityPostBean();
+    }
+    public static void bankPostBean(){
+        if(depositAmt > 0){
+            System.out.println("The banker sees you and urges you to withdraw all of your money, so you do so");
+            calculateIntrest();
+            getWithdrawl(0, depositAmt);
+            System.out.println("You now have $" + money);
+        }
+        System.out.println("With nothing else to do you leave the bank");
+        presentCityPostBean();
+    }
+    public static void graveyardPostBean(){
+        System.out.println("As you walk to the graveyard, you see that the stones are different, damaged and cracked. An old owl approches you and offers you to buy from his travelling shop \nDo you? \n1) Yes \n2) No");
+        getPlayerChoice(1,2); 
+        if(playerChoice == 1){
+            shop();
+        }
+        skeletonFight();
+    }
+    public static void shop(){
+        System.out.println("What would you like to buy? You have $" + money);
+        if(hasGun == false){
+            System.out.println("1) A pistol and 3 bullets for it   30$");
+        }
+        if(boughtBeans == false){
+            System.out.println("2) 4 beans      $10");
+        }
+        if(hasSunglasses == false){
+            System.out.println("3) Reflective Sunglasses   $15");
+        }
+        getPlayerChoice(1,3);
+        if(playerChoice == 1 && money >= 30 && hasGun == false){
+            hasGun = true;
+            bulletAmt = 3;
+            money -= 30;
+        } else if(playerChoice == 1 && (money < 30 || hasGun == true)){ 
+            System.out.println("You cannot buy that");
+        }
+        if(playerChoice == 2 && money >= 10 && boughtBeans == false){
+            beanNum = 4;
+            boughtBeans = true;
+            money -= 10;
+        } else if(playerChoice == 2 && (money < 10 || boughtBeans == true)){
+            System.out.println("You cannot buy that");
+        }
+        if(playerChoice == 3 && money >= 15 && hasSunglasses == false){
+            hasSunglasses = true;
+            speed *= 1.5;
+            money -= 15;
+        } else if(playerChoice == 3 && (money < 15 || hasSunglasses == true)){
+            System.out.println("You cannot buy that");
+        }
+        System.out.println("Shop again?\n1) Yes \n2) No");
+        getPlayerChoice(1,2);
+        if(playerChoice == 1){
+            shop();
+        }
+    }
+    public static void skeletonFight(){
+        skeleton1 = new Characters("Johnathan Carlton Lynch", 5 , 1, 1);
+        skeleton2  = new Characters("Merrimack", 5 , 1, 1);
+        System.out.println("Out of the shadows two skeletons approach you, one looking like a turtle, " + skeleton1.getName() +" and the other looking like some sort of bird, " + skeleton2.getName() + ".");
+        playerCharacter = new Characters("Player", 20, strength, speed);
+        while((skeleton1.getHealth())> 0 && (skeleton2.getHealth()> 0)){
+            System.out.println("What do you do? \n1) Attack \n2) Talk it out");
+            getPlayerChoice(1,2);
+            if(playerChoice == 2){
+                System.out.println("As you stutter to find words, the skeletons keep advancing on you and you realize, they dont have working eardrums... in fact, they dont have eardrums");
+                gameOver();
+            }
+            if(playerChoice == 1){
+                if ((skeleton1.getHealth())> 0 && (skeleton2.getHealth() > 0)){
+                    System.out.println("Who do you attack? \n1) " + skeleton1.getName() + "   " + skeleton1.getHealth() + "hp   \n2) " + skeleton2.getName() + "    " + skeleton2.getHealth());
+                    getPlayerChoice(1,2);
+                    if(playerChoice == 1){
+                        attack(1);
+                    } else if(playerChoice == 2){
+                        attack(2);
+                    }
+                }
+             }
+                
+        } // end of loop
+        while(skeleton1.getHealth()<= 0 && skeleton2.getHealth()>0){
+            System.out.println("What do you do? \n1) Attack \n2) Talk it out");
+            getPlayerChoice(1,2);
+            if(playerChoice == 2){
+                System.out.println("As you stutter to find words, the skeleton keeps advancing on you and you realize, he doesnt have working eardrums... in fact, he doesnt have eardrums");
+                gameOver();
+            }
+            if(playerChoice == 1){
+                attack(2);
+             }
+            if((skeleton1.getHealth())<= 0 && (skeleton2.getHealth() <= 0)){
+                break;
+            }
+        }
+        while(skeleton2.getHealth()<= 0 && skeleton1.getHealth() > 0){
+            System.out.println("What do you do? \n1) Attack \n2) Talk it out");
+            getPlayerChoice(1,2);
+            if(playerChoice == 2){
+                System.out.println("As you stutter to find words, the skeleton keeps advancing on you and you realize, he doesnt have working eardrums... in fact, he doesnt have eardrums");
+                gameOver();
+            }
+            if(playerChoice == 1){
+                attack(1);
+             }
+            if((skeleton1.getHealth())<= 0 && (skeleton2.getHealth() <= 0)){
+                break;
+            }  
+        }
+        if((skeleton1.getHealth())<= 0 && (skeleton2.getHealth() <= 0)){
+            System.out.println("The skeletons vanish and leave a trenchcoat in their wake. Do you take it? \n1) Yes \n2) No");
+            getPlayerChoice(1, 2);
+            if(playerChoice == 1 && hasSunglasses){
+                System.out.println("As you put on the trenchcoat you feel a power go through you, and you see green text flying all around you, and you feel replenished");
+                speed *= 3;
+                strength *= 1.5;
+                playerCharacter = new Characters("Player", 20, strength, speed);
+                hasCoat = true;
+                neoSight = true;
+            } else if(playerChoice == 1 && hasSunglasses == false){
+                System.out.println("Putting on the trenchcoat you feel time slow down and suddenly feel replenished");
+                playerCharacter.setHealth(20);
+                hasCoat = true;
+            }
+            bossBattle();
+        } else{
+        }
+    }
+    public static void bossBattle(){ 
+        System.out.println("You see someone you have never seen before, some kind of featherless biped. He looks at you and says\n\"Mr. Anderson, how are you liking the new reality, you fleshbox?\"");
+        System.out.print("Do you attack " + smith.getName() + "?\n1) Yes \n2) No, talk it out");
+        if(neoSight){
+            System.out.print("<");
+        }
+        System.out.println(" ");
+        getPlayerChoice(1, 2);
+        if(playerChoice == 1){
+            System.out.println("As you go to attack Agent Smith, you feel something stopping you. All of the sudden, you feel yourself start to dissapear");
+            gameOver();
+        }
+        if(playerChoice == 2){
+            System.out.print("\"Oh, a change of pace Mr. Anderson! Are you willing to give yourself up to me?\"\n1) Yes"); 
+            if(neoSight){
+                System.out.println("        <\n2) No");
+            } else{
+                System.out.println("\n2) No");
+            }
+            getPlayerChoice(1, 2);
+            if(playerChoice == 1){
+                System.out.println("Agent Smith walks up to you and puts his hand in your chest, changing your ability to be yourself");
+                if(hasSunglasses && hasCoat){
+                    attackSmith();
+                } else {
+                System.out.println("You feel your mind and body get taken over, and you lose control of everything. If only you has listened to the old bankers advice");
+                gameOver();
+                }
+            } else{
+                 System.out.println("As you go running towards Agent Smith, you feel yourself get lifted into the air, up and up and up. Then you fall.");
+                 gameOver();
+            }
+            
+        }
+    }
+    public static void attackSmith(){
+        smith = new Characters("Smith", 20, 1.2, 2);
+        System.out.println("You feel yourself lose control of a material body, but not yourself. You have entered The Program. Here you have an advantage for your speed");
+        playerCharacter.setSpeed(100);
+        while(smith.getHealth() > 0){
+            attack(3);
+            System.out.println("Press 1 to continue");
+            getPlayerChoice(1, 1);
+        }
+        if(smith.getHealth() <= 0){
+            System.out.println("You suddenly feel yourself as ... youself again. With all of the body parts that come with being an anthropomorphic lizard");
+            youWin();
+        }
+    }
+    public static void attack(int opponent){ //Using obj didnt work, so use int to find obj
+        Characters opp = new Characters();
+        boolean usedTurn = false;
+        if(opponent == 1){
+            opp = skeleton1;
+            System.out.println(opp.getName());
+        }
+        if(opponent == 2){
+            opp = skeleton2;
+            System.out.println(opp.getName());
+        }
+        if(opponent == 3){
+            opp = smith;
+            System.out.println(opp.getName());
+        } if(hasGun && bulletAmt > 0 && opponent !=3){
+            System.out.println("Would you like to try and shoot " + opp.getName() + "? \n1) Yes \n2) No");
+            getPlayerChoice(1, 2);
+            if(playerChoice == 1){
+                bulletAmt -=1;
+                if(Math.random() >= .5 || opponent != 3){
+                    opp.setHealth(0);
+                    System.out.println("You carefully aim down the barrel of the gun and manage to shoot " + opp.getName() + " killing them.");
+                } else{
+                    System.out.println("You carefully aim down the barrel of the gun, but you miss " + opp.getName());
+                }
+            usedTurn = true;
+            }
+        }
+        double playerDamage, oppDamage;
+        boolean oppAlive = true;
+        if((Math.random()*playerCharacter.getSpeed()) >= Math.random()*opp.getSpeed() && usedTurn == false){
+            System.out.println("You are faster, so you attack first");
+            playerDamage = Math.random()*playerCharacter.getStrength();
+            opp.setHealth(opp.getHealth() - playerDamage);
+            System.out.print("You dealt " + playerDamage + " to " + opp.getName());
+            if(opp.getHealth() <= 0){
+                System.out.println(" killing them.");
+                oppAlive = false;
+            } else{
+                System.out.println(" making their health " + opp.getHealth());
+            }
+            if (oppAlive == true){
+                oppDamage = Math.random()*opp.getStrength();
+                playerCharacter.setHealth(playerCharacter.getHealth() - oppDamage);
+                System.out.print(opp.getName() + " dealt " + oppDamage + " to you ");
+                if(playerCharacter.getHealth() <= 0){
+                    System.out.println("killing you.");
+                    System.out.println("Working at the farm more may help you");
+                    gameOver();
+                } else{
+                    System.out.println(" making your health " + (playerCharacter.getHealth()));
+                }
+            }
+        usedTurn = true;
+        } else if(usedTurn == false){
+            System.out.println("They are faster so they attack first");
+            oppDamage = Math.random()*opp.getStrength();
+            playerCharacter.setHealth(playerCharacter.getHealth() - oppDamage);
+            System.out.print(opp.getName() + " dealt " + oppDamage + " to you ");
+            if(playerCharacter.getHealth() <= 0){
+                System.out.println("killing you.");
+                gameOver();
+            } else{
+                System.out.println(" making your health " + (playerCharacter.getHealth()));
+            }
+            playerDamage = Math.random()*playerCharacter.getStrength();
+            opp.setHealth(opp.getHealth() - playerDamage);
+            System.out.print("You dealt " + playerDamage + " to " + opp.getName());
+            if(opp.getHealth() <= 0){
+                System.out.println(" killing them.");
+                oppAlive = false;
+            } else{
+                System.out.println(" making their health " + opp.getHealth());
+            }
+        }
+        if(opponent == 1){ //Resets the obj to match the changed obj
+            skeleton1.setHealth(opp.getHealth());
+            skeleton1.setSpeed(opp.getSpeed());
+            skeleton1.setStrength(opp.getStrength());
+        }
+        if(opponent == 2){
+            skeleton2.setHealth(opp.getHealth());
+            skeleton2.setSpeed(opp.getSpeed());
+            skeleton2.setStrength(opp.getStrength());
+        }
+        if(opponent == 3){
+            smith.setHealth(opp.getHealth());
+            smith.setSpeed(opp.getSpeed());
+            smith.setStrength(opp.getStrength());
+        }
+    }
+//Post-Game
+    public static void deathFarm(){
+        //ends the game at a farm
+        System.out.println("You are sent to a farm to work, and work, and work. In the end you die of starvation... if only you had some food.");
+        gameOver();
+    }
+    public static void gameOver(){
+        deaths++;
+        System.out.println("Game over, Play again? \n1) Yes \n2) No");
+        getPlayerChoice(1,2);
+        if(playerChoice == 1){
+            startGame();
+        } else {
+            System.exit(0);
+        }
+    }
+    public static void youWin(){
+        System.out.println("Congratulations, you beat my game. It wasnt supposed to be terribly hard, sorry if it was! \nName the two movies!");
+        System.out.println("In this one program, assuming you didnt start it and stop it multiple times, here are some fun stats \nFarm Visits " + farmVisit + "\nSaloon Visits " + saloonVisit + "\nBank Visits " + bankVisit + "\nGraveyard Visits " + graveyardVisit + "\nDeaths " + deaths + "\nStrength modifier " + strength + "\nMoney " + money);
+        System.out.println("Press 1 to end the game.");
+        getPlayerChoice(1, 1);
+        if(playerChoice == 1){
+            System.exit(0);
+        }
+    }
+    public static void makeCards(){
+        //Wrote a for loop wrong and got stubborn and made this, makes a card deck for Blackjack
+        for(int e = 0; e < 4; e++){
+            cards[e] = 1;
+        }
+        for(int e = 4; e < 8; e++){
+            cards[e] = 2;
+        }
+        for(int e = 8; e < 12; e++){
+            cards[e] = 3;
+        }
+        for(int e = 12; e < 16; e++){
+            cards[e] = 4;
+        }
+        for(int e = 16; e < 20; e++){
+            cards[e] = 5;
+        }
+        for(int e = 20; e < 24; e++){
+            cards[e] = 6;
+        }
+        for(int e = 24; e < 28; e++){
+            cards[e] = 7;
+        }
+        for(int e = 28; e < 32; e++){
+            cards[e] = 8;
+        }
+        for(int e = 32; e < 36; e++){
+            cards[e] = 9;
+        }
+        for(int e = 36; e < 52; e++){
+            cards[e] = 10;
+        }
+    }
+    public static void makeCharacters(){
+        //1 = skeleton, 2 = skeleton, 3 = smith, 4 = player
+        Characters skeleton1 = new Characters("Johnathan Carlton Lynch", 5 , 1, 1);
+        Characters skeleton2  = new Characters("Merrimack", 5 , 1, 1);
+        Characters smith = new Characters("Agent Smith", 20, 1.2, 2);
+        charactersAr[0] = skeleton1;
+        charactersAr[1] = skeleton2;
+        charactersAr[2] = smith;
+    }
+}
+class Characters{
+    //As the name suggests, this will make the 4 characters that have stats in the game
+    String name;
+    double health;
+    double strength;
+    double speed;
+    public Characters(String dieName, double hp, double strong, double fast){
+        name = dieName;
+        health = hp;
+        strength = strong;
+        speed = fast;
+    }
+    public Characters(){
+        name = "null";
+        health = 0;
+        strength = 0;
+        speed = 0;
+    }
+    public String getName(){
+        return name;
+    }
+    public double getHealth(){
+        return health;
+    }
+    public double getStrength(){
+        return strength;
+    }
+    public double getSpeed(){
+        return speed;
+    }
+    public void setName(String dieName){
+        name = dieName;
+    }
+    public void setHealth(double hp){
+        health = hp;
+    }
+    public void setStrength(double strong){
+        strength = strong;
+    }
+    public void setSpeed(double fast){
+        speed = fast;
+    }
+}
